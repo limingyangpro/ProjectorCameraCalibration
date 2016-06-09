@@ -1,12 +1,10 @@
-<snippet>
-  <content><![CDATA[
-# ${1:ProjectorCameraCalibration}
+# Projector Camera Calibration
 This an application for calibrating procam system practically. User calibrates the system with a small board (about B4 paper size), whatever the projector's focusing distance is.
 
-## Compability
+## Compatibility
 Current version only works on Linux
 
-## Prerequirements
+## Pre-requirements
 1. CMAKE 2.8
 2. OpenCV 3.1.0
 3. PCL 1.7
@@ -43,13 +41,7 @@ More patterns are available in ./patterns/
 5. Submit a pull request :D
 
 ## History
-9 Juin 2016: First commit
+9 June 2016: First commit
 
 ## Issues
 Some OS may have projector-camera synchronization problem, it will be solved later.
-
-]]></content>
-  <tabTrigger>readme</tabTrigger>
-</snippet>
-
-
