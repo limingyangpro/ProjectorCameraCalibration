@@ -1,0 +1,154 @@
+/*
+ * calibenvironment.test
+ *
+ *  Created on: Nov 7, 2015
+ *      Author: liming
+ */
+
+#include <boost/test/included/unit_test.hpp>
+#include "calibenvironment.h"
+#include "calibdata.h"
+#include "detectionimprovor.h"
+
+
+BOOST_FIXTURE_TEST_CASE( calibration_procedure, CalibrationData )
+{
+
+	string filename("tmp/tmp1_rawdata.txt");
+
+	RawData myRawdata;
+	myRawdata.loadData(filename);
+
+	setRawData(&myRawdata);
+	calibrateCamera();
+
+	cout<<cameraResult.intrinsicMatrix<<endl;
+	cout<<cameraResult.maxErr<<endl;
+	undistortProjectedPoints();
+	calibrateProjector();
+	cout<<projectorResult.intrinsicMatrix<<endl;
+	cout<<projectorResult.maxErr<<endl;
+}
+
+BOOST_FIXTURE_TEST_CASE( calib_raw_data_in_text, CalibrationData )
+{
+
+	string filename("analysisrawdata/rawdatatext.center");
+
+	RawData myRawdata;
+	myRawdata.loadData(filename);
+
+	myRawdata.physicalBoardSize = cv::Size(3600, 2400);                 /**<The calibration board size     >*/
+	myRawdata.cameraImageSize = cv::Size(640, 480);                   /**<The image size of the camera    >*/
+	myRawdata.projectorImageSize = cv::Size(1920, 1080);
+
+	calibrate();
+	saveParams("compareresult.yaml", false);
+
+}
+
+BOOST_FIXTURE_TEST_CASE( saveload_rawdata, RawData )
+{
+	string filename("testcases/rawdata4.txt");
+	loadData(filename);
+
+	saveData("test.txt");
+
+	RawData olddata = *this;  /**< Get a full complete copy of the current data >*/
+	loadData("test.txt");
+
+	BOOST_CHECK(olddata == *this);
+}
+
+BOOST_AUTO_TEST_CASE( check_detection )
+{
+	string filename("tmp/improved_result_rawdata.txt");
+	RawData myRawdata;
+	myRawdata.loadData(filename);
+	myRawdata.checkDetection();
+}
+
+BOOST_FIXTURE_TEST_CASE( improve_detection, CalibrationData )
+{
+	string filename("test/test_rawdata.yaml");
+	RawData myRawdata;
+	myRawdata.loadData(filename);
+	vector<cv::Point2d> physicalPoints, projectedPoints;
+	cv::Size camSize, projectorSize;
+	CalibrationEnvironment::readPointPatternFromFile("patterns/B4/B4Pattern.txt", physicalPoints, camSize);
+	CalibrationEnvironment::readPointPatternFromFile("patterns/B4/B4PatternProjected.txt", projectedPoints, projectorSize);
+
+	myRawdata.setModelPatterns(physicalPoints, projectedPoints);
+	myRawdata.saveTextData("rawdata.txt");
+
+	DetectionImprovor detectionImpr;
+	rawDataPtr = detectionImpr.improveDetection(&myRawdata);
+	calibrateCamera();
+	undistortProjectedPoints();
+	calibrateProjector();
+	stereoCalibrate();
+
+	saveParams("improved.yaml");
+}
+
+//BOOST_FIXTURE_TEST_CASE( check_point_pair, CalibrationData )
+//{
+//	string filename("20160106/result2/result2_rawdata.txt");
+//
+//	RawData myRawdata;
+//	myRawdata.loadData(filename);
+//
+//	myRawdata.improveDetection();
+//	calibrate();
+//	saveParams("improved_result180cm3.yaml");
+//}
+
+//BOOST_FIXTURE_TEST_CASE( data_correctness, CalibrationData )
+//{
+//	rawdata.loadData("testcases/rawdata1.txt");
+
+
+	/**
+	 * Check if the corresopndence is OK
+	 */
+//	unsigned int num = correspProjectedPoints.size();
+//	vector<cv::Point2f> projectedModel2D(num);
+//	vector<cv::Point2f> projectedScene(num);
+//	vector<cv::Point2f> reprojectedScene;
+//	for (unsigned int i = 0 ; i < num ; i++)
+//	{
+//		//model
+//		projectedModel2D[i] = projectedPattern[correspProjectedPoints[i].second.first];
+//
+//		//scene
+//		projectedScene[i] = projectedPts[correspProjectedPoints[i].second.second];
+//	}
+//
+//	cv::Mat_<float> verifyHomo = findHomography(projectedScene, projectedModel2D);
+//	perspectiveTransform(projectedScene, reprojectedScene, verifyHomo);
+//
+//	for (unsigned int i = 0 ; i < num ; i++)
+//	{
+//		cout<<projectedModel2D[i]<<" -> "<< reprojectedScene[i]<<" : "<<norm(projectedModel2D[i] - reprojectedScene[i])<<endl;
+//	}
+//	exit(1);
+//}
+
+
+//BOOST_FIXTURE_TEST_CASE( check_calib_projector, CalibrationData )
+//{
+//	rawdata.loadData("testcases/rawdata1.txt");
+//	calibrateCamera();
+//	undistortProjectedPoints();
+//	calibrateProjector();
+//
+//	//swap the parameter and recall calibrateCamera();
+//	rawdata.cameraImageSize = rawdata.projectorImageSize;
+//	rawdata.physicalPattern2D.swap(rawdata.projectedPointsScene);
+//	rawdata.physicalPointsScene.swap(rawdata.projectedPatternModel);
+//	calibrateCamera();
+//	cv::Mat dst;
+//
+//	BOOST_CHECK(cv::countNonZero(projectorResult.intrinsicMatrix-cameraResult.intrinsicMatrix) == 0);
+//}
+
