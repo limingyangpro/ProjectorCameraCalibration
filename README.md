@@ -33,6 +33,8 @@ Example:
 
 More patterns are available in ./patterns/
 
+Video: https://www.youtube.com/watch?v=Npd0rKHBH_w
+
 ## Contributing
 1. Fork it!
 2. Create your feature branch: `git checkout -b my-new-feature`
